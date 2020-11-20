@@ -27,11 +27,22 @@ const REDIRECT_FLAG = '__bhelper_redirect_flag__';
     let videoEl = $(".bilibili-player-video video").get(0);
     let videoId = extractCurVideoId();
     let settingKey = settingKeyBuilder(videoId);
+
     doWithDebugMode(() => GM_log("当前视频id：", videoId));
 
-    main();
+    //恢复播放上下文
+    switchPlayContext();
+    //保存播放上下文
+    savePlayContext();
 
-    function main() {
+    //===========================================
+    //                正文开始
+    //===========================================
+
+    /**
+     * 切换播放上下文
+     */
+    function switchPlayContext() {
         let lastPage = GM_getValue(settingKey("lastPage"), 1);
         let pageNo = extractCurPageNo();
         let pageList = $('.list-box li');
@@ -80,10 +91,19 @@ const REDIRECT_FLAG = '__bhelper_redirect_flag__';
                 }, 4 * 1000);
             }
         }
-        setInterval(persistPlayProgress, 5 * 1000);
     }
 
-    function persistPlayProgress() {
+    /**
+     * 定时持久化播放上下文到
+     */
+    function savePlayContext() {
+        setInterval(doSavePlayContext, 5 * 1000);
+    }
+
+    /**
+     * 持久化播放上下文到
+     */
+    function doSavePlayContext() {
         let pageNo = extractCurPageNo();
         let currentTime = videoEl.currentTime;
         GM_setValue(settingKey("lastPage"), pageNo);
