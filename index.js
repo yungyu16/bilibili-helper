@@ -1,9 +1,11 @@
 // ==UserScript==
-// @name         BiliBili记住播放进度
-// @namespace    yungyu16/bilibili-helper
-// @version      0.1
-// @description  记住B站视频或专辑播放进度
-// @author       yungyu16
+// @author      yungyu16
+// @name        BiliBili记住播放进度
+// @description 记住B站视频或专辑播放进度
+// @namespace   yungyu16/bilibili-helper
+// @version     0.1
+// @website     https://github.com/yungyu16/bilibili-helper
+// @supportURL  https://github.com/yungyu16/bilibili-helper/issues
 // @include     http*://www.bilibili.com/video/av*
 // @include     http*://www.bilibili.com/video/BV*
 // @require     https://lib.baomitu.com/qs/6.9.3/qs.min.js
