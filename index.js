@@ -7,6 +7,7 @@
 // @include     http*://www.bilibili.com/video/av*
 // @include     http*://www.bilibili.com/video/BV*
 // @require     https://lib.baomitu.com/qs/6.9.3/qs.min.js
+// @require     https://lib.baomitu.com/jquery/3.5.1/jquery.slim.min.js
 // @grant       GM_log
 // @grant       GM_setValue
 // @grant       GM_getValue
@@ -15,33 +16,51 @@
 
 (function () {
     'use strict';
-    debugger;
-    window.onload = doRealAction;
+    window.Bhelper_debug = true;
+    let qs = window.Qs;
+    let videoEl = $(".bilibili-player-video video").get(0);
+    let videoId = extractCurVideoId();
+    let settingKey = settingKeyBuilder(videoId);
+    if (Bhelper_debug) {
+        GM_log("当前视频id：", videoId);
+    }
+    main();
 
-    function doRealAction() {
-        debugger;
-        let videoObj = $(".bilibili-player-video video").get(0);
-        let videoId = extractCurVideoId();
-        GM_log("当前视频id：", videoId)
-        let settingKey = settingKeyBuilder(videoId);
-        GM_setValue(settingKey("lastPage"), 6);
+    function main() {
         let lastPage = GM_getValue(settingKey("lastPage"), 1);
         let lastTime = GM_getValue(settingKey("lastTime"), 0);
         let pageNo = extractCurPageNo();
         let pageList = $('.list-box li');
         let pageCount = pageList.length;
-        GM_log("lastPage：", lastPage)
-        GM_log("lastTime：", lastTime)
-        GM_log("pageNo：", pageNo)
-        GM_log("pageCount：", pageCount)
-        if (pageCount > 0 && pageNo !== lastPage) {
-            // let newPageIdx = lastPage - 1;
+        if (Bhelper_debug) {
+            GM_log("lastPage：", lastPage);
+            GM_log("lastTime：", lastTime);
+            GM_log("pageNo：", pageNo);
+            GM_log("pageCount：", pageCount);
+        }
+
+        if (pageCount > 0 && (pageNo / 1) !== (lastPage / 1)) {
             location.href = `${videoId}?p=${lastPage}`
-            // let newPage = pageList.eq(newPageIdx);
-            // newPage.click();
-            // newPage.toggleClass('on');
-            // pageList.eq(pageNo - 1).toggleClass('on');
-            // history.pushState(null, null, `${videoId}?p=${newPageIdx}`)
+        }
+        if (lastTime > 0) {
+            setTimeout(() => {
+                if (Bhelper_debug) {
+                    GM_log("定位到历史播放进度：", lastTime, "s");
+                }
+                videoEl.currentTime = lastTime;
+                videoEl.play();
+            }, 3 * 1000);
+        }
+        setInterval(persistPlayProgress, 5 * 1000);
+    }
+
+    function persistPlayProgress() {
+        let pageNo = extractCurPageNo();
+        let currentTime = videoEl.currentTime;
+        GM_setValue(settingKey("lastPage"), pageNo);
+        GM_setValue(settingKey("lastTime"), currentTime <= 0 ? 0 : currentTime);
+        if (Bhelper_debug) {
+            GM_log("lastPage：", pageNo, ",lastTime:", currentTime);
         }
     }
 
