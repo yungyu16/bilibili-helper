@@ -52,7 +52,7 @@ const REDIRECT_FLAG = '__bhelper_redirect_flag__';
             GM_log("pageCount：", pageCount);
         });
         //重定向到指定集
-        if (pageNo < 0) {
+        if (pageNo > 0) {
             doWithDebugMode(() => GM_log("指定集数播放...无需重定向"));
         }
         if (pageCount > 0
