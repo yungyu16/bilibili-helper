@@ -20,7 +20,7 @@
 // ==/UserScript==
 
 const FLAG_DEBUG = false;
-const REDIRECT_FLAG = '__bh_r_f'; //__bhelper_redirect_flag__
+const FLAG_REDIRECT = '__bh_r_f'; //__bhelper_redirect_flag__
 
 
 (function () {
@@ -172,8 +172,8 @@ const REDIRECT_FLAG = '__bh_r_f'; //__bhelper_redirect_flag__
      */
     function getRedirectFlag() {
         let queryParams = parseQueryString();
-        let redirectFlag = queryParams[REDIRECT_FLAG];
-        delete queryParams[REDIRECT_FLAG];
+        let redirectFlag = queryParams[FLAG_REDIRECT];
+        delete queryParams[FLAG_REDIRECT];
         history.pushState(null, null, `${location.pathname}?${Qs.stringify(queryParams)}`);
         return redirectFlag;
     }
@@ -182,7 +182,7 @@ const REDIRECT_FLAG = '__bh_r_f'; //__bhelper_redirect_flag__
      * 设置重定向标记
      */
     function setRedirectFlag(obj) {
-        obj[REDIRECT_FLAG] = 1;
+        obj[FLAG_REDIRECT] = 1;
     }
 
     /**
