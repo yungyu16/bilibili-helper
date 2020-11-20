@@ -11,6 +11,7 @@
 // @grant       GM_log
 // @grant       GM_setValue
 // @grant       GM_getValue
+// @grant       GM_notification
 // @grant       unsafeWindow
 // ==/UserScript==
 
@@ -25,6 +26,10 @@
         GM_log("当前视频id：", videoId);
     }
     main();
+
+    function formatProgressSecond(lastTime) {
+        return `${Math.floor(lastTime / 60)}m${Math.floor(lastTime % 60)}s`;
+    }
 
     function main() {
         let lastPage = GM_getValue(settingKey("lastPage"), 1);
@@ -44,10 +49,13 @@
         }
         if (lastTime > 0) {
             setTimeout(() => {
-                if (Bhelper_debug) {
-                    GM_log("定位到历史播放进度：", lastTime, "s");
-                }
                 videoEl.currentTime = lastTime;
+                GM_notification({
+                    title: "bilibili-helper",
+                    text: `已定位到历史播放进度:${formatProgressSecond(lastTime)}`,
+                    silent: true,
+                    timeout: 3000,
+                });
                 videoEl.play();
             }, 3 * 1000);
         }
@@ -60,7 +68,7 @@
         GM_setValue(settingKey("lastPage"), pageNo);
         GM_setValue(settingKey("lastTime"), currentTime <= 0 ? 0 : currentTime);
         if (Bhelper_debug) {
-            GM_log("lastPage：", pageNo, ",lastTime:", currentTime);
+            GM_log("lastPage：", pageNo, ",lastTime:", formatProgressSecond(currentTime));
         }
     }
 
