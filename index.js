@@ -19,19 +19,15 @@
 
 (function () {
     'use strict';
-    window.Bhelper_debug = true;
+
+    let FLAG_DEBUG = true;
+
     let qs = window.Qs;
     let videoEl = $(".bilibili-player-video video").get(0);
     let videoId = extractCurVideoId();
     let settingKey = settingKeyBuilder(videoId);
-    if (Bhelper_debug) {
-        GM_log("当前视频id：", videoId);
-    }
+    doWithDebugMode(() => GM_log("当前视频id：", videoId));
     main();
-
-    function formatProgressSecond(lastTime) {
-        return `${Math.floor(lastTime / 60)}m${Math.floor(lastTime % 60)}s`;
-    }
 
     function main() {
         let lastPage = GM_getValue(settingKey("lastPage"), 1);
@@ -39,25 +35,29 @@
         let pageNo = extractCurPageNo();
         let pageList = $('.list-box li');
         let pageCount = pageList.length;
-        if (Bhelper_debug) {
+        doWithDebugMode(() => {
             GM_log("lastPage：", lastPage);
             GM_log("lastTime：", lastTime);
             GM_log("pageNo：", pageNo);
             GM_log("pageCount：", pageCount);
-        }
-
+        })
         if (pageCount > 0 && (pageNo / 1) !== (lastPage / 1)) {
             location.href = `${videoId}?p=${lastPage}`
         }
         if (lastTime > 0) {
             setTimeout(() => {
                 videoEl.currentTime = lastTime;
-                GM_notification({
-                    title: "bilibili-helper",
-                    text: `已定位到历史播放进度:${formatProgressSecond(lastTime)}`,
-                    silent: true,
-                    timeout: 3000,
-                });
+                let progressMsg = `已定位到历史播放进度:${formatProgressSecond(lastTime)}`;
+                doWithDebugMode(() => {
+                    let notifyParam = {
+                        title: "bilibili-helper",
+                        text: progressMsg,
+                        silent: true,
+                        timeout: 3000,
+                    };
+                    GM_notification(notifyParam);
+                })
+                GM_log("progressMsg：", progressMsg);
                 videoEl.play();
             }, 3 * 1000);
         }
@@ -69,9 +69,26 @@
         let currentTime = videoEl.currentTime;
         GM_setValue(settingKey("lastPage"), pageNo);
         GM_setValue(settingKey("lastTime"), currentTime <= 0 ? 0 : currentTime);
-        if (Bhelper_debug) {
-            GM_log("lastPage：", pageNo, ",lastTime:", formatProgressSecond(currentTime));
+        doWithDebugMode(() => GM_log("lastPage：", pageNo, ",lastTime:", formatProgressSecond(currentTime)));
+    }
+
+    function doWithDebugMode(action) {
+        try {
+            if (FLAG_DEBUG) {
+                action();
+            }
+        } catch (e) {
+            GM_log("Bhelper调试指令执行异常：", e);
         }
+    }
+
+    /**
+     * 播放进度格式化
+     * @param lastTime
+     * @returns {string}
+     */
+    function formatProgressSecond(lastTime) {
+        return `${Math.floor(lastTime / 60)}m${Math.floor(lastTime % 60)}s`;
     }
 
     /**
