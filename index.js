@@ -94,7 +94,7 @@
     }
 
     /**
-     * 抽取当前集数
+     * 抽取pageNo 当前集数
      */
     function extractCurPageNo() {
         let searchStr = location.search;
