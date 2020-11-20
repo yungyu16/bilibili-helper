@@ -6,7 +6,8 @@
 // @version     1.0
 // @website     https://github.com/yungyu16/bilibili-helper
 // @supportURL  https://github.com/yungyu16/bilibili-helper/issues
-// @supportURL  https://raw.githubusercontent.com/yungyu16/bilibili-helper/master/index.js
+// @updateURL   https://raw.githubusercontent.com/yungyu16/bilibili-helper/master/index.js
+// @downloadURL https://raw.githubusercontent.com/yungyu16/bilibili-helper/master/index.js
 // @include     http*://www.bilibili.com/video/av*
 // @include     http*://www.bilibili.com/video/BV*
 // @require     https://lib.baomitu.com/qs/6.9.3/qs.min.js
