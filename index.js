@@ -3,9 +3,10 @@
 // @name        BiliBili记住播放进度
 // @description 记住B站视频或专辑播放进度
 // @namespace   yungyu16/bilibili-helper
-// @version     0.1
+// @version     0.4
 // @website     https://github.com/yungyu16/bilibili-helper
 // @supportURL  https://github.com/yungyu16/bilibili-helper/issues
+// @supportURL  https://raw.githubusercontent.com/yungyu16/bilibili-helper/master/index.js
 // @include     http*://www.bilibili.com/video/av*
 // @include     http*://www.bilibili.com/video/BV*
 // @require     https://lib.baomitu.com/qs/6.9.3/qs.min.js
