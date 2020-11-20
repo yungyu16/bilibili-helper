@@ -94,14 +94,14 @@ const REDIRECT_FLAG = '__bh_r_f'; //__bhelper_redirect_flag__
     }
 
     /**
-     * 定时持久化播放上下文到
+     * 定时持久化播放上下文
      */
     function savePlayContext() {
         setInterval(doSavePlayContext, 5 * 1000);
     }
 
     /**
-     * 持久化播放上下文到
+     * 持久化播放上下文
      */
     function doSavePlayContext() {
         let pageNo = extractCurPageNo();
