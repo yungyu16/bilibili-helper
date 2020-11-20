@@ -21,6 +21,7 @@
 const FLAG_DEBUG = false;
 const REDIRECT_FLAG = '__bh_r_f'; //__bhelper_redirect_flag__
 
+
 (function () {
     'use strict';
 
@@ -77,15 +78,7 @@ const REDIRECT_FLAG = '__bh_r_f'; //__bhelper_redirect_flag__
                     }
                     videoEl.currentTime = lastTime;
                     let progressMsg = `已定位到历史播放进度:${formatProgressSecond(lastTime)}`;
-                    doWithDebugMode(() => {
-                        let notifyParam = {
-                            title: "bilibili-helper",
-                            text: progressMsg,
-                            silent: true,
-                            timeout: 3000,
-                        };
-                        GM_notification(notifyParam);
-                    });
+                    doWithDebugMode(() => publishNotification(progressMsg));
                     GM_log("progressMsg：", progressMsg);
                     videoEl.play();
                 }, 4 * 1000);
@@ -189,5 +182,18 @@ const REDIRECT_FLAG = '__bh_r_f'; //__bhelper_redirect_flag__
      */
     function setRedirectFlag(obj) {
         obj[REDIRECT_FLAG] = 1;
+    }
+
+    /**
+     * 发送桌面通知
+     */
+    function publishNotification(msg) {
+        let notifyParam = {
+            title: "bilibili-helper",
+            text: msg,
+            silent: true,
+            timeout: 3000,
+        };
+        GM_notification(notifyParam);
     }
 })();
