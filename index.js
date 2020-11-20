@@ -3,7 +3,7 @@
 // @name        BiliBili记住播放进度
 // @description 记住B站视频或专辑播放进度
 // @namespace   yungyu16/bilibili-helper
-// @version     0.5
+// @version     1.0
 // @website     https://github.com/yungyu16/bilibili-helper
 // @supportURL  https://github.com/yungyu16/bilibili-helper/issues
 // @supportURL  https://raw.githubusercontent.com/yungyu16/bilibili-helper/master/index.js
@@ -18,53 +18,67 @@
 // @grant       unsafeWindow
 // ==/UserScript==
 
+const FLAG_DEBUG = false;
+const REDIRECT_FLAG = '__bhelper_redirect_flag__';
+
 (function () {
     'use strict';
 
-    const FLAG_DEBUG = true;
-
-    let qs = window.Qs;
     let videoEl = $(".bilibili-player-video video").get(0);
     let videoId = extractCurVideoId();
     let settingKey = settingKeyBuilder(videoId);
     doWithDebugMode(() => GM_log("当前视频id：", videoId));
+
     main();
 
     function main() {
         let lastPage = GM_getValue(settingKey("lastPage"), 1);
-        let lastTime = GM_getValue(settingKey("lastTime"), 0);
         let pageNo = extractCurPageNo();
         let pageList = $('.list-box li');
         let pageCount = pageList.length;
         doWithDebugMode(() => {
             GM_log("lastPage：", lastPage);
-            GM_log("lastTime：", lastTime);
-            GM_log("pageNo：", pageNo);
             GM_log("pageCount：", pageCount);
-        })
-        if (pageCount > 0 && (pageNo / 1) !== (lastPage / 1)) {
-            location.href = `${videoId}?p=${lastPage}`
+        });
+        //重定向到指定集
+        if (pageNo < 0) {
+            doWithDebugMode(() => GM_log("指定集数播放...无需重定向"));
         }
-        if (lastTime > 0) {
-            setTimeout(() => {
-                if (videoEl.currentTime > 10) {
-                    GM_log("B站已自动同步播放进度,无需重新定位");
-                    return;
-                }
-                videoEl.currentTime = lastTime;
-                let progressMsg = `已定位到历史播放进度:${formatProgressSecond(lastTime)}`;
-                doWithDebugMode(() => {
-                    let notifyParam = {
-                        title: "bilibili-helper",
-                        text: progressMsg,
-                        silent: true,
-                        timeout: 3000,
-                    };
-                    GM_notification(notifyParam);
-                })
-                GM_log("progressMsg：", progressMsg);
-                videoEl.play();
-            }, 3 * 1000);
+        if (pageCount > 0
+            && pageNo < 0
+            && lastPage > 1) { //当前链接没有携带集数参数
+            if ((pageNo) !== (lastPage / 1)) {
+                let thisQueryParams = parseQueryString();
+                thisQueryParams.p = lastPage;
+                setRedirectFlag(thisQueryParams); //添加重定向标记
+                location.href = `/video/${videoId}?${Qs.stringify(thisQueryParams)}`
+            }
+        }
+        //设置播放进度
+        if (getRedirectFlag()) { //检查重定向标记
+            let lastTime = GM_getValue(settingKey("lastTime"), 0);
+            doWithDebugMode(() => GM_log("lastTime：", lastTime));
+            if (lastTime > 0) {
+                setTimeout(() => {
+                    if (videoEl.currentTime > 10) {
+                        GM_log("B站已自动同步播放进度,无需重新定位");
+                        return;
+                    }
+                    videoEl.currentTime = lastTime;
+                    let progressMsg = `已定位到历史播放进度:${formatProgressSecond(lastTime)}`;
+                    doWithDebugMode(() => {
+                        let notifyParam = {
+                            title: "bilibili-helper",
+                            text: progressMsg,
+                            silent: true,
+                            timeout: 3000,
+                        };
+                        GM_notification(notifyParam);
+                    });
+                    GM_log("progressMsg：", progressMsg);
+                    videoEl.play();
+                }, 4 * 1000);
+            }
         }
         setInterval(persistPlayProgress, 5 * 1000);
     }
@@ -77,6 +91,9 @@
         doWithDebugMode(() => GM_log("lastPage：", pageNo, ",lastTime:", formatProgressSecond(currentTime)));
     }
 
+    /**
+     * 调试命令
+     */
     function doWithDebugMode(action) {
         try {
             if (FLAG_DEBUG) {
@@ -89,8 +106,6 @@
 
     /**
      * 播放进度格式化
-     * @param lastTime
-     * @returns {string}
      */
     function formatProgressSecond(lastTime) {
         return `${Math.floor(lastTime / 60)}m${Math.floor(lastTime % 60)}s`;
@@ -98,8 +113,6 @@
 
     /**
      * 拼接videoId av号、BV号
-     * @param bv
-     * @returns {function(*): string}
      */
     function settingKeyBuilder(bv) {
         return function (key) {
@@ -112,6 +125,12 @@
      */
     function extractCurVideoId() {
         let pathname = location.pathname;
+        if (!pathname) {
+            return undefined;
+        }
+        if (pathname.endsWith("/")) {
+            pathname = pathname.substring(0, pathname.length - 1);
+        }
         return pathname.substr(pathname.lastIndexOf('/') + 1);
     }
 
@@ -119,11 +138,32 @@
      * 抽取pageNo 当前集数
      */
     function extractCurPageNo() {
+        let queryParams = parseQueryString();
+        return queryParams.p ? queryParams.p : -1;
+    }
+
+    /**
+     * 解析url参数
+     */
+    function parseQueryString() {
         let searchStr = location.search;
         if (!searchStr) {
-            return 1;
+            return {};
         }
-        let queryParams = qs.parse(searchStr.substr(1));
-        return queryParams.p ? queryParams.p : 1;
+        return Qs.parse(searchStr.substr(1));
+    }
+
+    /**
+     * 获取重定向标记
+     */
+    function getRedirectFlag() {
+        return parseQueryString()[REDIRECT_FLAG];
+    }
+
+    /**
+     * 设置重定向标记
+     */
+    function setRedirectFlag(obj) {
+        obj[REDIRECT_FLAG] = 1;
     }
 })();
