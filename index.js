@@ -19,7 +19,7 @@
 // ==/UserScript==
 
 const FLAG_DEBUG = false;
-const REDIRECT_FLAG = '__bhelper_redirect_flag__';
+const REDIRECT_FLAG = '__bh_r_f'; //__bhelper_redirect_flag__
 
 (function () {
     'use strict';
@@ -174,10 +174,14 @@ const REDIRECT_FLAG = '__bhelper_redirect_flag__';
     }
 
     /**
-     * 获取重定向标记
+     * 获取重定向标记,获取一次后删除
      */
     function getRedirectFlag() {
-        return parseQueryString()[REDIRECT_FLAG];
+        let queryParams = parseQueryString();
+        let redirectFlag = queryParams[REDIRECT_FLAG];
+        delete queryParams[REDIRECT_FLAG];
+        history.pushState(null, null, `${location.pathname}?${Qs.stringify(queryParams)}`);
+        return redirectFlag;
     }
 
     /**
