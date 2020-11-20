@@ -20,7 +20,7 @@
 (function () {
     'use strict';
 
-    let FLAG_DEBUG = true;
+    const FLAG_DEBUG = true;
 
     let qs = window.Qs;
     let videoEl = $(".bilibili-player-video video").get(0);
@@ -46,6 +46,10 @@
         }
         if (lastTime > 0) {
             setTimeout(() => {
+                if (videoEl.currentTime > 10) {
+                    GM_log("B站已自动同步播放进度,无需重新定位");
+                    return;
+                }
                 videoEl.currentTime = lastTime;
                 let progressMsg = `已定位到历史播放进度:${formatProgressSecond(lastTime)}`;
                 doWithDebugMode(() => {
