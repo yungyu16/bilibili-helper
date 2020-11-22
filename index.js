@@ -66,6 +66,7 @@ const FLAG_REDIRECT = '__bh_r_f'; //__bhelper_redirect_flag__
                 thisQueryParams.p = lastPage;
                 setRedirectFlag(thisQueryParams); //添加重定向标记
                 location.href = `/video/${videoId}?${Qs.stringify(thisQueryParams)}`
+                return;
             }
         }
         //设置播放进度
