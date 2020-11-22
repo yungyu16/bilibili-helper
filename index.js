@@ -29,6 +29,8 @@ const FLAG_REDIRECT = '__bh_r_f'; //__bhelper_redirect_flag__
     let videoEl = $(".bilibili-player-video video").get(0);
     let videoId = extractCurVideoId();
     let settingKey = settingKeyBuilder(videoId);
+    let lastPageKey = settingKey("lastPage");
+    let lastTimeKey = settingKey("lastTime");
 
     doWithDebugMode(() => GM_log("当前视频id：", videoId));
 
@@ -45,10 +47,9 @@ const FLAG_REDIRECT = '__bh_r_f'; //__bhelper_redirect_flag__
      * 切换播放上下文
      */
     function switchPlayContext() {
-        let lastPage = GM_getValue(settingKey("lastPage"), 1);
+        let lastPage = GM_getValue(lastPageKey, 1);
         let pageNo = extractCurPageNo();
-        let pageList = $('.list-box li');
-        let pageCount = pageList.length;
+        let pageCount = countVideoPage();
         doWithDebugMode(() => {
             GM_log("lastPage：", lastPage);
             GM_log("pageCount：", pageCount);
@@ -69,7 +70,7 @@ const FLAG_REDIRECT = '__bh_r_f'; //__bhelper_redirect_flag__
         }
         //设置播放进度
         if (getRedirectFlag()) { //检查重定向标记
-            let lastTime = GM_getValue(settingKey("lastTime"), 0);
+            let lastTime = GM_getValue(lastPageKey, 0);
             doWithDebugMode(() => GM_log("lastTime：", lastTime));
             if (lastTime > 0) {
                 setTimeout(() => {
@@ -100,8 +101,8 @@ const FLAG_REDIRECT = '__bh_r_f'; //__bhelper_redirect_flag__
     function doSavePlayContext() {
         let pageNo = extractCurPageNo();
         let currentTime = videoEl.currentTime;
-        GM_setValue(settingKey("lastPage"), pageNo);
-        GM_setValue(settingKey("lastTime"), currentTime <= 0 ? 0 : currentTime);
+        GM_setValue(lastPageKey, pageNo);
+        GM_setValue(lastTimeKey, currentTime <= 0 ? 0 : currentTime);
         doWithDebugMode(() => GM_log("lastPage：", pageNo, ",lastTime:", formatProgressSecond(currentTime)));
     }
 
@@ -116,6 +117,14 @@ const FLAG_REDIRECT = '__bh_r_f'; //__bhelper_redirect_flag__
         } catch (e) {
             GM_log("Bhelper调试指令执行异常：", e);
         }
+    }
+
+    /**
+     * 统计当前播放页有多少集
+     */
+    function countVideoPage() {
+        let pageList = $('.list-box li');
+        return pageList.length;
     }
 
     /**
@@ -174,7 +183,7 @@ const FLAG_REDIRECT = '__bh_r_f'; //__bhelper_redirect_flag__
         let queryParams = parseQueryString();
         let redirectFlag = queryParams[FLAG_REDIRECT];
         delete queryParams[FLAG_REDIRECT];
-        history.pushState(null, null, `${location.pathname}?${Qs.stringify(queryParams)}`);
+        history.replaceState(null, null, `${location.pathname}?${Qs.stringify(queryParams)}`);
         return redirectFlag;
     }
 
